@@ -45,7 +45,7 @@ angle = (rand(2, ndots).*2 -1) .* 180; % in 3d
 Updateangle = spdsphere /  FrameRate; % vd per frame
 
 angle_2d = NaN(size(angle));
-while 1
+while ~KbCheck
 
     angle_2d(2,:) = sind(angle(2,:)).* (vdsphere / 2);
     angle_2d(1,:) = sind(angle(1,:)).*cosd(angle(2,:)).* (vdsphere / 2);
@@ -53,6 +53,7 @@ while 1
     pix = ang2pix(angle_2d);
 
     Screen('DrawDots', window, pix,ang2pix(vddot), white, center);
+    Screen('DrawDots', window, center, ang2pix(vdfix), white);
 
     Screen('Flip', window);
 
