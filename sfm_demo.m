@@ -10,7 +10,6 @@ function sfm_demo
 AssertOpenGL;
 Priority(1);
 
-sid = [];
 sid = input('identifier for this session?','s');
 
 fid = fopen([sid '.txt'], 'w');
@@ -23,11 +22,12 @@ secsperrun = 210;
 % key
 kNames = {'Left', 'Right', 'Escape'};
 kvalid = KbName(kNames);
+kesc = kvalid(3);
 
 % Sti Parameters
 vddot = .1; % In vd
 vdsphere = 8.2;
-ndots = 300;
+ndots = 500;
 vdfix = .2;
 spdsphere = 16; % in vd/s
 
