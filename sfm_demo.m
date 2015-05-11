@@ -14,8 +14,8 @@ sid = [];
 sid = input('identifier for this session?','s');
 
 % Run / Trial Parameters
-nRuns = 10;
-secsperrun = 240;
+nRuns = 6;
+secsperrun = 210;
 
 % key
 kleft = KbName('Left');
@@ -27,7 +27,7 @@ kvalid = [kleft, kright, kesc];
 % Sti Parameters
 vddot = .1; % In vd
 vdsphere = 8.2;
-ndots = 500;
+ndots = 300;
 vdfix = .2;
 spdsphere = 16; % in vd/s
 
