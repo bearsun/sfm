@@ -11,7 +11,7 @@ AssertOpenGL;
 Priority(1);
 
 sid = [];
-sid = input('identifier for this session?');
+sid = input('identifier for this session?','s');
 
 % Run / Trial Parameters
 nRuns = 10;
@@ -34,7 +34,7 @@ spdsphere = 16; % in vd/s
 screenid = max(Screen('Screens'));
 FrameRate = Screen('NominalFrameRate', screenid);
 
-fperrun = secsperrun / FrameRate;
+fperrun = secsperrun * FrameRate;
 resp = NaN(nRuns, fperrun);
 
 if screenid
@@ -54,7 +54,7 @@ white = WhiteIndex(screenid);
 
 [center(1), center(2)] = RectCenter(mrect);
 
-
+KbStrokeWait;
 for run = 1:nRuns
     % calculate x and y for each dot
     angle = (rand(2, ndots).*2 -1) .* 180; % in 3d
@@ -77,6 +77,7 @@ for run = 1:nRuns
     end
     
     DrawFormattedText(window, ['end of block ', num2str(run), ', presse to start the next.'], 'center', 'center', black);
+    Screen('Flip', window);
     KbStrokeWait;
 end
 session_end;
@@ -87,6 +88,7 @@ session_end;
     end
 
     function session_end
+        save([sid '.mat']);
         ShowCursor;
         sca;
         return
@@ -98,7 +100,7 @@ session_end;
         if keyIsDown && any(ismember(knum, kvalid)) && numel(knum) == 1
             resp = knum;
             if resp == kesc
-                session_end;return
+                session_end;
             end
         else
             resp = NaN;
