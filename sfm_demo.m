@@ -13,16 +13,16 @@ Priority(1);
 sid = [];
 sid = input('identifier for this session?','s');
 
+fid = fopen([sid '.txt'], 'w');
+fprintf(fid, 'run\tflip\tdirection\n');
+
 % Run / Trial Parameters
 nRuns = 6;
 secsperrun = 210;
 
 % key
-kleft = KbName('Left');
-kright = KbName('Right');
-kesc = KbName('Escape');
-kvalid = [kleft, kright, kesc];
-
+kNames = {'Left', 'Right', 'Escape'};
+kvalid = KbName(kNames);
 
 % Sti Parameters
 vddot = .1; % In vd
@@ -35,7 +35,6 @@ screenid = max(Screen('Screens'));
 FrameRate = Screen('NominalFrameRate', screenid);
 
 fperrun = secsperrun * FrameRate;
-resp = NaN(nRuns, fperrun);
 
 if screenid
     monitorh=30; %12;% in cm
@@ -73,7 +72,7 @@ for run = 1:nRuns
         
         Screen('Flip', window);
         angle(1,:) = angle(1,:) + Updateangle;
-        resp(run, flip) = CheckResp;
+        CheckResp;
     end
     
     DrawFormattedText(window, ['end of block ', num2str(run), ', presse to start the next.'], 'center', 'center', black);
@@ -88,22 +87,21 @@ session_end;
     end
 
     function session_end
-        save([sid '.mat']);
+        fclose(fid);
         ShowCursor;
         sca;
         return
     end
 
-    function resp = CheckResp
+    function CheckResp
         [keyIsDown, ~, keyCode] = KbCheck;
         knum = find(keyCode);
-        if keyIsDown && any(ismember(knum, kvalid)) && numel(knum) == 1
-            resp = knum;
-            if resp == kesc
+        if keyIsDown && numel(knum) == 1
+            direction = kNames{ismember(kvalid, knum)};
+            fprintf(fid, '%d\t%d\t%s\n', run, flip, direction);
+            if knum == kesc
                 session_end;
             end
-        else
-            resp = NaN;
         end
 
 
