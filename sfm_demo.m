@@ -20,9 +20,9 @@ nRuns = 6;
 secsperrun = 210;
 
 % key
-kNames = {'Left', 'Right', 'Escape'};
+kNames = {'Left', 'Right', 'Down', 'Escape'};
 kvalid = KbName(kNames);
-kesc = kvalid(3);
+kesc = kvalid(4);
 
 % Sti Parameters
 vddot = .1; % In vd

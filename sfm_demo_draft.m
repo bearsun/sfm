@@ -28,9 +28,9 @@ kesc = kvalid(3);
 % Sti Parameters
 vddot = .1; % In vd
 vdsphere = 8.2;
-ndots = 500;
+ndots = 300;
 vdfix = .2;
-spdsphere = 16/180*pi; % in vd/s
+spdsphere = 64/180*pi; % in vd/s
 
 screenid = max(Screen('Screens'));
 FrameRate = Screen('NominalFrameRate', screenid);
@@ -122,8 +122,13 @@ session_end;
 %                 angle_2d(2,:) = sind(angle(2,:)).* (vdsphere / 2);
 %                 angle_2d(1,:) = sind(angle(1,:)).*cosd(angle(2,:)).* (vdsphere / 2);
                 [~, angle_2d(1,:), angle_2d(2,:)] = pol2cart(angle(1,:), vdsphere/2, tan(angle(2,:)).*vdsphere/2);
+            case 'twospheres'
+                [~, angle_2d_1x, angle_2d_1y] = sph2cart(angle(1,1:ndots/2), angle(2,1:ndots/2), vdsphere/2);
+                [~, angle_2d_2x, angle_2d_2y] = sph2cart(angle(1,(ndots/2+1):end), angle(2,(ndots/2+1):end), vdsphere/2);
+                angle_2d(1,:) = [angle_2d_1x - vdsphere/2, angle_2d_2x + vdsphere/2];
+                angle_2d(2,:) = [angle_2d_1y, angle_2d_2y];
             case 'try'
-                [~, angle_2d(1,:), angle_2d(2,:)] = sph2cart(angle(1,:), angle(2,:), (angle(1,:)./pi.*vdsphere/2));
+                [~, angle_2d(1,:), angle_2d(2,:)] = sph2cart(angle(1,:), angle(2,:), (sec(angle(1,:))./pi.*vdsphere/2));
         end
     end
 end
