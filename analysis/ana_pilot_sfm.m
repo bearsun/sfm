@@ -8,7 +8,6 @@ data = readtable(filepath);
 fperrun = 210*60;
 %% for loop...to scan
 durations = cell2table({});
-durations.Properties.VariableNames={'Run', 'Duration', 'Direction'}
 nrow = size(data , 1);
 init = data.flip(1);
 for k = 1:nrow
