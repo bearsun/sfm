@@ -25,7 +25,7 @@ kvalid = KbName(kNames);
 kesc = kvalid(4);
 
 % Sti Parameters
-vddot = .1; % In vd
+vddot = .05; % In vd
 vdsphere = 8.2;
 ndots = 500;
 vdfix = .2;
