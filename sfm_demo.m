@@ -6,6 +6,8 @@ function sfm_demo
 % central fixation: .2 vd
 % angular volecity of the sphere: 16 vd/s
 % average speed of the dots: 0.75 vd/s
+% catch periord 20s per run
+
 
 AssertOpenGL;
 Priority(1);
@@ -18,6 +20,8 @@ fprintf(fid, 'run\tflip\tdirection\n');
 % Run / Trial Parameters
 nRuns = 6;
 secsperrun = 180; %3 min per run
+tcatchperrun = 4; % 4 catch trial per run
+catchpert = 5; % 5 secs per trial
 
 % key
 kNames = {'Left', 'Right', 'Down', 'Escape'};
@@ -35,6 +39,7 @@ screenid = max(Screen('Screens'));
 FrameRate = Screen('NominalFrameRate', screenid);
 
 fperrun = secsperrun * FrameRate;
+fcatfpert = catchpert * FrameRate;
 
 if screenid
     monitorh=30; %12;% in cm
@@ -47,6 +52,9 @@ end
 % Determine the values of black and white
 black = BlackIndex(screenid);
 white = WhiteIndex(screenid);
+gray = GrayIndex(screenid);
+red = [255 0 0];
+green = [0  255 0];
 
 % Set up our screen
 [window, mrect] = Screen('OpenWindow', screenid, black);
@@ -58,31 +66,59 @@ Screen('Flip', window);
 
 KbStrokeWait;
 for run = 1:nRuns
+    rng('shuffle');
+    % insert catch flips
+    fcatchstart = randsample(1:fcatfpert:fperrun, tcatchperrun);
+    disp(fcatchstart);
     % calculate x and y for each dot
     angle = (rand(2, ndots).*2 -1) .* 180; % in 3d
     Updateangle = spdsphere /  FrameRate; % vd per frame
     
-    angle_2d = NaN(size(angle));
+    catchcountdown = NaN;
     for flip = 1:fperrun
         
-        angle_2d(2,:) = sind(angle(2,:)).* (vdsphere / 2);
-        angle_2d(1,:) = sind(angle(1,:)).*cosd(angle(2,:)).* (vdsphere / 2);
+        if ismember(flip, fcatchstart)
+            catchcountdown = fcatfpert;
+            fprintf(fid, '%d\t%d\t%s\n', run, flip, 'CatchStart');
+        end
         
-        pix = ang2pix(angle_2d);
-        
-        Screen('DrawDots', window, pix,ang2pix(vddot), white, center);
-%        Screen('DrawDots', window, center, ang2pix(vdfix), white);
-        
+        if 1|| catchcountdown > 0
+            % catch flip
+            angle_back = angle(:, angle(1,:) < 0);
+            angle_front = angle(:, angle(1,:) >= 0);
+            pix_back = projection(angle_back);
+            pix_front = projection(angle_front);
+            
+            Screen('DrawDots', window, pix_back, ang2pix(vddot), green, center);
+            Screen('DrawDots', window, pix_front ,ang2pix(vddot), red, center);
+            DrawFormattedText(window,'Catch', 'center', 300, white);
+            catchcountdown = catchcountdown - 1;
+        else
+            pix = projection(angle);
+            Screen('DrawDots', window, pix ,ang2pix(vddot), white, center);
+        end
+        Screen('DrawDots', window, center, ang2pix(vdfix), white);
         Screen('Flip', window);
-        angle(1,:) = angle(1,:) + Updateangle;
+        angle = update(angle);
         CheckResp;
     end
     
-    DrawFormattedText(window, ['end of block ', num2str(run), ', presse to start the next.'], 'center', 'center', white);
+    DrawFormattedText(window, ['End of block ', num2str(run), ', presse to start the next.'], 'center', 'center', white);
     Screen('Flip', window);
     KbStrokeWait;
 end
 session_end;
+
+    function angle = update(angle)
+        angle(1,:) = angle(1,:) + Updateangle;
+        angle(1, angle(1,:) > 180) = angle(1, angle(1,:) > 180) - 360;
+    end
+
+    function pix = projection(angle)
+        vd(2,:) = sind(angle(2,:)).* (vdsphere / 2);
+        vd(1,:) = sind(angle(1,:)).*cosd(angle(2,:)).* (vdsphere / 2);
+        pix = ang2pix(vd);
+    end
 
     function pixels=ang2pix(ang)
         pixpercm=mrect(4)/monitorh;
