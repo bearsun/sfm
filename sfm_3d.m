@@ -52,7 +52,8 @@ white = WhiteIndex(screenid);
 InitializeMatlabOpenGL;
 
 % Open the main window with multi-sampling for anti-aliasing
-[window, mrect] = PsychImaging('OpenWindow', screenid, 0);
+[window, mrect] = Screen('OpenWindow', screenid, 0);
+Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
 
 % Start the OpenGL context (you have to do this before you issue OpenGL
 % commands such as we are using here)
@@ -81,7 +82,7 @@ glLoadIdentity;
 
 % Calculate the field of view in the y direction assuming a distance to the
 % objects of 100cm
-dist = 100;
+dist = 55;
 angle = 2 * atand(screenHeight / dist);
 
 % Set up our perspective projection. This is defined by our field of view
@@ -99,7 +100,7 @@ glLoadIdentity;
 glLightfv(GL.LIGHT0, GL.POSITION, [1 2 3 0]);
 
 % Location of the camera is at the origin
-cam = [0 0 0];
+cam = [0 0 300];
 
 % Set our camera to be looking directly down the Z axis (depth) of our
 % coordinate system
@@ -120,8 +121,8 @@ glClear;
 
 % Change the light reflection properties of the material to blue. We could
 % force a color to the cubes or do this.
-glMaterialfv(GL.FRONT_AND_BACK,GL.AMBIENT, [0.0 0.0 1.0 1]);
-glMaterialfv(GL.FRONT_AND_BACK,GL.DIFFUSE, [0.0 0.0 1.0 1]);
+glMaterialfv(GL.FRONT_AND_BACK,GL.AMBIENT, [1.0 1.0 1.0 .5]);
+glMaterialfv(GL.FRONT_AND_BACK,GL.DIFFUSE, [1.0 1.0 1.0 .5]);
 
 % End the OpenGL context now that we have finished setting things up
 Screen('EndOpenGL', window);
@@ -136,13 +137,13 @@ KbStrokeWait;
 for run = 1:nRuns
     % calculate x and y for each dot
     angle = (rand(2, ndots).*2 -1) .* pi; % in 3d
-    Updateangle = spdsphere /  FrameRate; % vd per frame
-    
-    [x,y,z] = sph2cart(angle(1,:),angle(2,:),ang2pix(vdsphere));
-    xyz=[x;y;z];
-    disp(xyz);
+    Updateangle = spdsphere /  FrameRate /8; % vd per frame
 
     for flip = 1:fperrun
+        
+        [x,y,z] = sph2cart(angle(1,:),angle(2,:),ang2pix(vdsphere));
+        xyz=[x;z;y]*.1;
+        
         % Begin the OpenGL context now we want to issue OpenGL commands again
         Screen('BeginOpenGL', window);
         
@@ -150,7 +151,7 @@ for run = 1:nRuns
         glClear;
         Screen('EndOpenGL', window);
         % Draw the initial dots
-        moglDrawDots3D(window, xyz, 20 , [255 255 255]);
+        moglDrawDots3D(window, xyz, 2 , [255 255 255 .5]);
        
         Screen('Flip', window);
         angle(1,:) = angle(1,:) + Updateangle;
