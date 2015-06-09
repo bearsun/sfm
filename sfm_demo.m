@@ -2,8 +2,8 @@ function sfm_demo
 % a sfm demo to collect behaviour data for ambiguous structure-from-motion
 % from Gijs Joost Brouwer and Raymond van Ee, 2007
 % sphere: height/length: 8.2 vd, 500 dots, rotating around vertical axis
-% each dot: 5.8 arcmin in diameter
-% central fixation: 11.7 arcmin
+% each dot: .05 vd in diameter
+% central fixation: .2 vd
 % angular volecity of the sphere: 16 vd/s
 % average speed of the dots: 0.75 vd/s
 
@@ -17,7 +17,7 @@ fprintf(fid, 'run\tflip\tdirection\n');
 
 % Run / Trial Parameters
 nRuns = 6;
-secsperrun = 210;
+secsperrun = 180; %3 min per run
 
 % key
 kNames = {'Left', 'Right', 'Down', 'Escape'};
@@ -53,6 +53,9 @@ white = WhiteIndex(screenid);
 
 [center(1), center(2)] = RectCenter(mrect);
 
+DrawFormattedText(window, 'Please fixate at the center of the sceen and report your perception.\nLeft for rotation to the left,\n Right for rotation to the right,\nDown for both.\n', 'center', 'center', white);
+Screen('Flip', window);
+
 KbStrokeWait;
 for run = 1:nRuns
     % calculate x and y for each dot
@@ -75,7 +78,7 @@ for run = 1:nRuns
         CheckResp;
     end
     
-    DrawFormattedText(window, ['end of block ', num2str(run), ', presse to start the next.'], 'center', 'center', black);
+    DrawFormattedText(window, ['end of block ', num2str(run), ', presse to start the next.'], 'center', 'center', white);
     Screen('Flip', window);
     KbStrokeWait;
 end
