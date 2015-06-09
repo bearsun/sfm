@@ -68,7 +68,7 @@ for run = 1:nRuns
         pix = ang2pix(angle_2d);
         
         Screen('DrawDots', window, pix,ang2pix(vddot), white, center);
-        Screen('DrawDots', window, center, ang2pix(vdfix), white);
+%        Screen('DrawDots', window, center, ang2pix(vdfix), white);
         
         Screen('Flip', window);
         angle(1,:) = angle(1,:) + Updateangle;
