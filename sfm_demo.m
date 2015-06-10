@@ -66,12 +66,12 @@ Screen('Flip', window);
 
 KbStrokeWait;
 for run = 1:nRuns
-    rng('shuffle');
+    rng('default');
     % insert catch flips
     fcatchstart = randsample(1:fcatfpert:fperrun, tcatchperrun);
     disp(fcatchstart);
     % calculate x and y for each dot
-    angle = (rand(2, ndots).*2 -1) .* 180; % in 3d
+    angle = rand(2, ndots).* 360; % in 3d
     Updateangle = spdsphere /  FrameRate; % vd per frame
     
     catchcountdown = NaN;
@@ -84,8 +84,8 @@ for run = 1:nRuns
         
         if 1|| catchcountdown > 0
             % catch flip
-            angle_back = angle(:, angle(1,:) < 0);
-            angle_front = angle(:, angle(1,:) >= 0);
+            angle_back = angle(:, angle(2,:) < 90);
+            angle_front = angle(:, angle(2,:) >=90);
             pix_back = projection(angle_back);
             pix_front = projection(angle_front);
             
@@ -109,15 +109,15 @@ for run = 1:nRuns
 end
 session_end;
 
-    function angle = update(angle)
-        angle(1,:) = angle(1,:) + Updateangle;
-        angle(1, angle(1,:) > 180) = angle(1, angle(1,:) > 180) - 360;
+    function fangle = update(fangle)
+        fangle(1,:) = fangle(1,:) + Updateangle;
+        fangle(1, fangle(1,:) > 360) = fangle(1, fangle(1,:) > 360) - 360;
     end
 
-    function pix = projection(angle)
-        vd(2,:) = sind(angle(2,:)).* (vdsphere / 2);
-        vd(1,:) = sind(angle(1,:)).*cosd(angle(2,:)).* (vdsphere / 2);
-        pix = ang2pix(vd);
+    function fpix = projection(fangle)
+        vd(2,:) = sind(fangle(2,:)).* (vdsphere / 2);
+        vd(1,:) = cosd(fangle(1,:)).*cosd(fangle(2,:)).* (vdsphere / 2);
+        fpix = ang2pix(vd);
     end
 
     function pixels=ang2pix(ang)
