@@ -12,16 +12,30 @@ function sfm_demo
 AssertOpenGL;
 Priority(1);
 
+flag_return = 0;
+
 sid = input('identifier for this session?','s');
 
 fid = fopen([sid '.txt'], 'w');
 fprintf(fid, 'run\tflip\tdirection\n');
 
 % Run / Trial Parameters
-nRuns = 6;
+nCond = 3; % 3 conditions: passive, maintainence, alternation
+% kCond = 1:nCond;
+nrunpercond = 4; % 4 runs for each condition
+nRuns = nCond * nrunpercond;
 secsperrun = 180; %3 min per run
 tcatchperrun = 4; % 4 catch trial per run
 catchpert = 5; % 5 secs per trial
+runseq = [ones(1,nrunpercond), repmat(2:nCond, [1,nrunpercond])];
+
+assert(numel(runseq) == nRuns);
+
+instructs = {'';
+    'Please try to maintain every perception as long as possible.\n';
+    'Please try to switch between every perception as fast as possible.\n'};
+
+condinst = instructs(runseq);
 
 % key
 kNames = {'Left', 'Right', 'Down', 'Escape'};
@@ -53,11 +67,13 @@ end
 black = BlackIndex(screenid);
 white = WhiteIndex(screenid);
 gray = GrayIndex(screenid);
+dim = [50 50 50];
 red = [255 0 0];
 green = [0  255 0];
 
 % Set up our screen
 [window, mrect] = Screen('OpenWindow', screenid, black, [1920 0 1920+1024 768]);
+Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 [center(1), center(2)] = RectCenter(mrect);
 
@@ -66,35 +82,51 @@ Screen('Flip', window);
 
 KbStrokeWait;
 for run = 1:nRuns
+    DrawFormattedText(window, ['Block No. ', num2str(run), ',\n', condinst{run}, 'Presse any key to start.\n'], 'center', 'center', white);
+    Screen('Flip', window);
+    KbStrokeWait;
     rng('default');
     % insert catch flips
     fcatchstart = randsample(1:fcatfpert:fperrun, tcatchperrun);
-    disp(fcatchstart);
+    fcatchorient = randi(2, size(fcatchstart));
+    disp([fcatchstart; fcatchorient]);
     % calculate x and y for each dot
-    angle = rand(2, ndots).* 360; % in 3d
+    angle = [rand(1,ndots).*360; rand(1,ndots).* 180 - 90];
     Updateangle = spdsphere /  FrameRate; % vd per frame
     
     catchcountdown = NaN;
     for flip = 1:fperrun
-        
-        if ismember(flip, fcatchstart)
+        [bcatch, k] = ismember(flip, fcatchstart);
+        if bcatch
             catchcountdown = fcatfpert;
-            fprintf(fid, '%d\t%d\t%s\n', run, flip, 'CatchStart');
+            kcatch = k;
+            
+            if fcatchorient(kcatch) == 1
+                fprintf(fid, '%d\t%d\t%s\n', run, flip, 'CatchLeft');
+            elseif fcatchorient(kcatch) == 2
+                fprintf(fid, '%d\t%d\t%s\n', run, flip, 'CatchRight');
+            end
+            
+        elseif catchcountdown == 1
+            fprintf(fid, '%d\t%d\t%s\n', run, flip, 'CatchEnd');
         end
         
-        if 1|| catchcountdown > 0
+        if catchcountdown > 0
             % catch flip
-            angle_back = angle(:, angle(2,:) < 90);
-            angle_front = angle(:, angle(2,:) >=90);
+            if fcatchorient(kcatch) == 1
+                angle_back = angle(:, angle(1,:) > 180);
+                angle_front = angle(:, angle(1,:) <= 180);
+            elseif fcatchorient(kcatch) == 2
+                angle_back = angle(:, angle(1,:) < 180);
+                angle_front = angle(:, angle(1,:) >= 180);
+            end
+            
             pix_back = projection(angle_back);
             pix_front = projection(angle_front);
             
-            if ~isempty(pix_back)
-                Screen('DrawDots', window, pix_back, ang2pix(vddot), green, center);
-            else
-                Screen('DrawDots', window, pix_front ,ang2pix(vddot), red, center);
-            end
-            DrawFormattedText(window,'Catch', 'center', 300, white);
+            Screen('DrawDots', window, pix_back, ang2pix(vddot), dim, center);
+            Screen('DrawDots', window, pix_front ,ang2pix(vddot), white, center);
+            DrawFormattedText(window,'Catch', 'center', 100, white);
             catchcountdown = catchcountdown - 1;
         else
             pix = projection(angle);
@@ -104,11 +136,10 @@ for run = 1:nRuns
         Screen('Flip', window);
         angle = update(angle);
         CheckResp;
+        if flag_return == 1
+            return
+        end
     end
-    
-    DrawFormattedText(window, ['End of block ', num2str(run), ', presse to start the next.'], 'center', 'center', white);
-    Screen('Flip', window);
-    KbStrokeWait;
 end
 session_end;
 
@@ -132,17 +163,20 @@ session_end;
         fclose(fid);
         ShowCursor;
         sca;
-        return
+        flag_return = 1;
     end
 
     function CheckResp
         [keyIsDown, ~, keyCode] = KbCheck;
         knum = find(keyCode);
         if keyIsDown && numel(knum) == 1
-            direction = kNames{ismember(kvalid, knum)};
-            fprintf(fid, '%d\t%d\t%s\n', run, flip, direction);
-            if knum == kesc
-                session_end;
+            [bin, kkey] = ismember(knum, kvalid);
+            if bin
+                direction = kNames{kkey};
+                fprintf(fid, '%d\t%d\t%s\n', run, flip, direction);
+                if knum == kesc
+                    session_end;
+                end
             end
         end
 
