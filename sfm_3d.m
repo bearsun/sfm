@@ -89,7 +89,7 @@ angle = 2 * atand(screenHeight / dist);
 % (here given by the variable "angle") and the aspect ratio of our frustum
 % (our screen) and two clipping planes. These define the minimum and
 % maximum distances allowable here 0.1cm and 200cm.
-gluPerspective(angle, ar, -300, 300);
+gluPerspective(angle, ar, -200, 200);
 
 % Setup modelview matrix: This defines the position, orientation and
 % looking direction of the virtual camera that will be look at our scene.
@@ -100,11 +100,11 @@ glLoadIdentity;
 glLightfv(GL.LIGHT0, GL.POSITION, [1 2 3 0]);
 
 % Location of the camera is at the origin
-cam = [0 0 300];
+cam = [0 0 200];
 
 % Set our camera to be looking directly down the Z axis (depth) of our
 % coordinate system
-fix = [0 0 -100];
+fix = [0 0 0];
 
 % Define "up"
 up = [0 1 0];
@@ -141,9 +141,9 @@ for run = 1:nRuns
 
     for flip = 1:fperrun
         
-        [x,y,z] = sph2cart(angle(1,:),angle(2,:),ang2pix(vdsphere));
-        xyz=[x;z;y]*.1;
-        
+        [x,y,z] = sph2cart(angle(1,:),angle(2,:),ang2cm(vdsphere));
+        xyz=[x;z;y];
+        disp(xyz);
         % Begin the OpenGL context now we want to issue OpenGL commands again
         Screen('BeginOpenGL', window);
         
@@ -163,6 +163,11 @@ for run = 1:nRuns
     KbStrokeWait;
 end
 session_end;
+
+    function cm = ang2cm(ang)
+        cmperang = 55 / (2 * atand(screenHeight/ 2 / dist));
+        cm = ang*cmperang;
+    end
 
     function pixels=ang2pix(ang)
         pixpercm=mrect(4)/monitorh;
