@@ -1,4 +1,4 @@
-function sfm_demo
+function sfm_demo(debug)
 % a sfm demo to collect behaviour data for ambiguous structure-from-motion
 % from Gijs Joost Brouwer and Raymond van Ee, 2007
 % sphere: height/length: 8.2 vd, 500 dots, rotating around vertical axis
@@ -15,7 +15,7 @@ Priority(1);
 flag_return = 0;
 
 sid = input('identifier for this session?','s');
-
+abbreviatedFilename = sid;
 fid = fopen([sid '.txt'], 'w');
 fprintf(fid, 'run\tflip\tdirection\n');
 
@@ -66,12 +66,81 @@ end
 % Determine the values of black and white
 black = BlackIndex(screenid);
 white = WhiteIndex(screenid);
-gray = GrayIndex(screenid);
 dim = [50 50 50];
-red = [255 0 0];
-green = [0  255 0];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Calibration
+if ~debug
+    Eyelink('Shutdown');
+    Eyelink('Initialize');
+    HideCursor;
+    Screen('Fillrect', mainwin, gray)
+    Screen('Flip',mainwin);
+    
+    Eyelink('StartSetup')
+    pause(2)
+    
+    
+    whichKey=0;
+    
+    keysWanted=[kspace kreturn kback];
+    flushevents('keydown');
+    while 1
+        pressed = 0;
+        while pressed == 0
+            [pressed, ~, kbData] = kbcheck;
+        end;
+        
+        for keysToCheck = 1:length(keysWanted)
+            if kbData(keysWanted(keysToCheck)) == 1
+                
+                keyPressed = keysWanted(keysToCheck);
+                if keyPressed == kback
+                    whichKey=9;
+                    flushevents('keydown');
+                    waitsecs(.1)
+                elseif keyPressed == kspace
+                    whichKey=1;
+                    flushevents('keydown');
+                    waitsecs(.1)
+                elseif keyPressed == kreturn
+                    whichKey=5;
+                    flushevents('keydown');
+                    waitsecs(.1)
+                else
+                end
+                flushevents('keydown');
+                
+            end;
+        end;
+        
+        if whichKey == 1
+            whichKey=0;
+            [~, tx, ty] = Eyelink('TargetCheck');
+            Screen('FillRect', mainwin ,black, [tx-20 ty-5 tx+20 ty+5]);
+            Screen('FillRect', mainwin ,black, [tx-5 ty-20 tx+5 ty+20]);
+            Screen('Flip', mainwin);
+        elseif whichKey == 5
+            whichKey=0;
+            Eyelink('AcceptTrigger');
+        elseif whichKey == 9
+            break;
+        end
+    end;
+    status = Eyelink('OpenFile',abbreviatedFilename);
+    if status
+        error(['openfile error, status: ', num2str(status)]);
+    end
+    Eyelink('StartRecording');
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Set up our screen
+if ~debug
+    Eyelink('Message','session_start');
+end
+
 [window, mrect] = Screen('OpenWindow', screenid, black, [1920 0 1920+1024 768]);
 Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -95,6 +164,11 @@ for run = 1:nRuns
     Updateangle = spdsphere /  FrameRate; % vd per frame
     
     catchcountdown = NaN;
+    
+    if ~debug
+        Eyelink('Message','run_start');
+    end
+    
     for flip = 1:fperrun
         [bcatch, k] = ismember(flip, fcatchstart);
         if bcatch
@@ -140,6 +214,10 @@ for run = 1:nRuns
             return
         end
     end
+    
+    if ~debug
+        Eyelink('Message','run_end');
+    end
 end
 session_end;
 
@@ -160,6 +238,12 @@ session_end;
     end
 
     function session_end
+        if ~debug
+            Eyelink('Message','session_end');
+            Eyelink('Stoprecording');
+            Eyelink('CloseFile');
+            Eyelink('ReceiveFile');
+        end
         fclose(fid);
         ShowCursor;
         sca;
