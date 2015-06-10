@@ -57,7 +57,7 @@ red = [255 0 0];
 green = [0  255 0];
 
 % Set up our screen
-[window, mrect] = Screen('OpenWindow', screenid, black);
+[window, mrect] = Screen('OpenWindow', screenid, black, [1920 0 1920+1024 768]);
 
 [center(1), center(2)] = RectCenter(mrect);
 
@@ -71,7 +71,7 @@ for run = 1:nRuns
     fcatchstart = randsample(1:fcatfpert:fperrun, tcatchperrun);
     disp(fcatchstart);
     % calculate x and y for each dot
-    angle = (rand(2, ndots).*2 -1) .* 180; % in 3d
+    angle = [45;45]; %(rand(2, ndots).*2 -1) .* 180; % in 3d
     Updateangle = spdsphere /  FrameRate; % vd per frame
     
     catchcountdown = NaN;
@@ -89,8 +89,11 @@ for run = 1:nRuns
             pix_back = projection(angle_back);
             pix_front = projection(angle_front);
             
-            Screen('DrawDots', window, pix_back, ang2pix(vddot), green, center);
-            Screen('DrawDots', window, pix_front ,ang2pix(vddot), red, center);
+            if ~isempty(pix_back)
+                Screen('DrawDots', window, pix_back, ang2pix(vddot), green, center);
+            else
+                Screen('DrawDots', window, pix_front ,ang2pix(vddot), red, center);
+            end
             DrawFormattedText(window,'Catch', 'center', 300, white);
             catchcountdown = catchcountdown - 1;
         else
