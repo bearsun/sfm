@@ -41,6 +41,7 @@ condinst = instructs(runseq);
 kNames = {'Left', 'Right', 'Down', 'Escape'};
 kvalid = KbName(kNames);
 kesc = kvalid(4);
+keyW = KbName('w');
 
 % Sti Parameters
 vddot = .05; % In vd
@@ -66,7 +67,7 @@ end
 % Determine the values of black and white
 black = BlackIndex(screenid);
 white = WhiteIndex(screenid);
-dim = [50 50 50];
+dim = [80 80 80];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Calibration
 if ~debug
@@ -141,7 +142,7 @@ if ~debug
     Eyelink('Message','session_start');
 end
 
-[window, mrect] = Screen('OpenWindow', screenid, black, [1920 0 1920+1024 768]);
+[window, mrect] = Screen('OpenWindow', screenid, black);
 Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 [center(1), center(2)] = RectCenter(mrect);
@@ -151,9 +152,21 @@ Screen('Flip', window);
 
 KbStrokeWait;
 for run = 1:nRuns
+    if run == nrunpercond + 1
+        DrawFormattedText(window, 'Plese wait for the experimenter.\n', 'center', 'center', white);
+        Screen('Flip', window);
+        while 1
+            [keyIsDown, ~, keyCode] = KbCheck;
+            if keyIsDown && find(keyCode) == keyW
+                break;
+            end
+        end
+    end
+    
     DrawFormattedText(window, ['Block No. ', num2str(run), ',\n', condinst{run}, 'Presse any key to start.\n'], 'center', 'center', white);
     Screen('Flip', window);
     KbStrokeWait;
+
     rng('default');
     % insert catch flips
     fcatchstart = randsample(1:fcatfpert:fperrun, tcatchperrun);
@@ -200,7 +213,6 @@ for run = 1:nRuns
             
             Screen('DrawDots', window, pix_back, ang2pix(vddot), dim, center);
             Screen('DrawDots', window, pix_front ,ang2pix(vddot), white, center);
-            DrawFormattedText(window,'Catch', 'center', 100, white);
             catchcountdown = catchcountdown - 1;
         else
             pix = projection(angle);
@@ -230,7 +242,7 @@ session_end;
         vd(2,:) = sind(fangle(2,:)).* (vdsphere / 2);
         vd(1,:) = cosd(fangle(1,:)).*cosd(fangle(2,:)).* (vdsphere / 2);
         fpix = ang2pix(vd);
-    end
+    end[keyIsDown, ~, keyCode] = KbCheck;
 
     function pixels=ang2pix(ang)
         pixpercm=mrect(4)/monitorh;
