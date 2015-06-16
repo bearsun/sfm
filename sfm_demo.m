@@ -22,7 +22,7 @@ fprintf(fid, 'run\tflip\tdirection\n');
 % Run / Trial Parameters
 nCond = 3; % 3 conditions: passive, maintainence, alternation
 % kCond = 1:nCond;
-nrunpercond = 4; % 4 runs for each condition
+nrunpercond = 3; % 3 runs for each condition
 nRuns = nCond * nrunpercond;
 secsperrun = 180; %3 min per run
 tcatchperrun = 4; % 4 catch trial per run
@@ -38,6 +38,9 @@ instructs = {'';
 condinst = instructs(runseq);
 
 % key
+kspace = KbName('space');
+kreturn=KbName('Return');
+kback = KbName('BackSpace');
 kNames = {'Left', 'Right', 'Down', 'Escape'};
 kvalid = KbName(kNames);
 kesc = kvalid(4);
@@ -67,15 +70,21 @@ end
 % Determine the values of black and white
 black = BlackIndex(screenid);
 white = WhiteIndex(screenid);
+gray = GrayIndex(screenid);
 dim = [80 80 80];
 
+
+[window, mrect] = Screen('OpenWindow', screenid, black);
+Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+[center(1), center(2)] = RectCenter(mrect);
+
+mainwin = window;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Calibration
 if ~debug
     Eyelink('Shutdown');
     Eyelink('Initialize');
     HideCursor;
-    Screen('Fillrect', mainwin, gray)
-    Screen('Flip',mainwin);
     
     Eyelink('StartSetup')
     pause(2)
@@ -117,8 +126,8 @@ if ~debug
         if whichKey == 1
             whichKey=0;
             [~, tx, ty] = Eyelink('TargetCheck');
-            Screen('FillRect', mainwin ,black, [tx-20 ty-5 tx+20 ty+5]);
-            Screen('FillRect', mainwin ,black, [tx-5 ty-20 tx+5 ty+20]);
+            Screen('FillRect', mainwin ,white, [tx-20 ty-5 tx+20 ty+5]);
+            Screen('FillRect', mainwin ,white, [tx-5 ty-20 tx+5 ty+20]);
             Screen('Flip', mainwin);
         elseif whichKey == 5
             whichKey=0;
@@ -142,10 +151,6 @@ if ~debug
     Eyelink('Message','session_start');
 end
 
-[window, mrect] = Screen('OpenWindow', screenid, black);
-Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-[center(1), center(2)] = RectCenter(mrect);
 
 DrawFormattedText(window, 'Please fixate at the center of the sceen and report your perception.\nLeft for rotation to the left,\n Right for rotation to the right,\nDown for both.\n', 'center', 'center', white);
 Screen('Flip', window);
