@@ -172,7 +172,7 @@ for run = 1:nRuns
     Screen('Flip', window);
     KbStrokeWait;
 
-    rng('default');
+    rng('Shuffle');
     % insert catch flips
     fcatchstart = randsample(1:fcatfpert:fperrun, tcatchperrun);
     fcatchorient = randi(2, size(fcatchstart));
