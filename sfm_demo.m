@@ -38,7 +38,7 @@ instructs = {'';
 condinst = instructs(runseq);
 
 % key
-kspace = KbName('space');
+kspace = KbName('Space');
 kreturn=KbName('Return');
 kback = KbName('BackSpace');
 kNames = {'Left', 'Right', 'Down', 'Escape'};
@@ -70,7 +70,6 @@ end
 % Determine the values of black and white
 black = BlackIndex(screenid);
 white = WhiteIndex(screenid);
-gray = GrayIndex(screenid);
 dim = [80 80 80];
 
 
@@ -155,7 +154,7 @@ end
 DrawFormattedText(window, 'Please fixate at the center of the sceen and report your perception.\nLeft for rotation to the left,\n Right for rotation to the right,\nDown for both.\n', 'center', 'center', white);
 Screen('Flip', window);
 
-KbStrokeWait;
+WaitSpace;
 for run = 1:nRuns
     if run == nrunpercond + 1
         DrawFormattedText(window, 'Plese wait for the experimenter.\n', 'center', 'center', white);
@@ -168,9 +167,9 @@ for run = 1:nRuns
         end
     end
     
-    DrawFormattedText(window, ['Block No. ', num2str(run), ',\n', condinst{run}, 'Presse any key to start.\n'], 'center', 'center', white);
+    DrawFormattedText(window, ['Block No. ', num2str(run), ',\n', condinst{run}, 'Presse space to start.\n'], 'center', 'center', white);
     Screen('Flip', window);
-    KbStrokeWait;
+    WaitSpace;
 
     rng('Shuffle');
     % insert catch flips
@@ -280,7 +279,19 @@ session_end;
                 end
             end
         end
-
-
     end
+
+    function WaitSpace
+        while 1
+            [keyIsDown, ~, keyCode] = KbCheck;
+            if keyIsDown
+                knum = find(keyCode);
+                if knum == kspace
+                    break
+                end
+            end
+            WaitSecs(.5);
+        end
+    end
+
 end
