@@ -282,6 +282,7 @@ session_end;
     end
 
     function WaitSpace
+        WaitSecs(1);
         while 1
             [keyIsDown, ~, keyCode] = KbCheck;
             if keyIsDown
@@ -290,7 +291,6 @@ session_end;
                     break
                 end
             end
-            WaitSecs(.5);
         end
     end
 
