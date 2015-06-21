@@ -47,18 +47,18 @@ durations.Properties.VariableNames = {'Run', 'Duration', 'Direction'};
 
 %% baseline
 disp('Baseline: Left / Right / Down / All');
-baseline = durations(durations.Run<5,:);
+baseline = durations(durations.Run<4,:);
 display_data(baseline);
 
 %% maintainance
 disp('Maintain: Left / Right / Down / All');
-maintain = durations(rem(durations.Run,2) == 1 & durations.Run>4,:);
+maintain = durations(rem(durations.Run,2) == 0 & durations.Run>4,:);
 display_data(maintain);
 
 
 %% alternation
 disp('Alternation: Left / Right / Down / All');
-alter = durations(rem(durations.Run,2) == 0 & durations.Run>4,:);
+alter = durations(rem(durations.Run,2) == 1 & durations.Run>4,:);
 display_data(alter);
 
     function display_data(d)
