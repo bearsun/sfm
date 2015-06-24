@@ -246,7 +246,7 @@ session_end;
         vd(2,:) = sind(fangle(2,:)).* (vdsphere / 2);
         vd(1,:) = cosd(fangle(1,:)).*cosd(fangle(2,:)).* (vdsphere / 2);
         fpix = ang2pix(vd);
-    end[keyIsDown, ~, keyCode] = KbCheck;
+    end
 
     function pixels=ang2pix(ang)
         pixpercm=mrect(4)/monitorh;
