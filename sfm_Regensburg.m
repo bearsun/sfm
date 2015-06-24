@@ -1,4 +1,4 @@
-function sfm_demo(debug)
+function sfm_Regensburg(debug)
 % a sfm demo to collect behaviour data for ambiguous structure-from-motion
 % from Gijs Joost Brouwer and Raymond van Ee, 2007
 % sphere: height/length: 8.2 vd, 500 dots, rotating around vertical axis
@@ -8,7 +8,7 @@ function sfm_demo(debug)
 % average speed of the dots: 0.75 vd/s
 % catch periord 20s per run
 
-%KbName('UnifyKeyNames')
+% KbName('UnifyKeyNames')
 
 AssertOpenGL;
 Priority(1);
@@ -18,7 +18,7 @@ flag_return = 0;
 
 sid = input('identifier for this session?','s');
 abbreviatedFilename = sid;
-fid = fopen([sid '.txt'], 'w');
+fid = fopen(['data_eye_sfm/',sid '.txt'], 'w');
 fprintf(fid, 'run\tflip\tdirection\n');
 
 % Run / Trial Parameters
@@ -41,8 +41,8 @@ condinst = instructs(runseq);
 
 % key
 kspace = KbName('space');
-kreturn=KbName('return');
-kback = KbName('backspace');
+% kreturn=KbName('return');
+% kback = KbName('backspace');
 kNames = {'Left', 'Right', 'Down', 'esc'};
 %kNames = {'7&', '8*', '9(', 'esc'};
 
@@ -71,8 +71,8 @@ fcatfpert = catchpert * FrameRate;
 %     distance=45;
 % end
 
-    monitorh=27.1; %12;% in cm
-    distance=63;
+monitorh=27.1; %12;% in cm
+distance=63;
 
 % Determine the values of black and white
 black = BlackIndex(screenid);
@@ -97,7 +97,7 @@ Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 [center(1), center(2)] = RectCenter(mrect);
 
-mainwin = window;
+% mainwin = window;
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Calibration
 % if ~debug
 %     Eyelink('Shutdown');
@@ -173,13 +173,13 @@ mainwin = window;
 % end
 
 
-DrawFormattedText(window, 'Please fixate at the center of the sceen and report your perception.\nLeft for rotation to the left,\n Right for rotation to the right,\nDown for both.\n', [], 'center', white);
+DrawFormattedText(window, 'Please fixate at the center of the sceen and report your perception.\nLeft for rotation to the left,\n Right for rotation to the right,\nDown for both.\n', center(1)-200, 'center', white);
 Screen('Flip', window);
 
 WaitSpace;
 for run = 1:nRuns
     if run == nrunpercond + 1
-        DrawFormattedText(window, 'Plese wait for the experimenter.\n', [], 'center', white);
+        DrawFormattedText(window, 'Plese wait for the experimenter.\n', center(1)-200, 'center', white);
         Screen('Flip', window);
         while 1
             [keyIsDown, ~, keyCode] = KbCheck;
@@ -189,7 +189,7 @@ for run = 1:nRuns
         end
     end
     
-    DrawFormattedText(window, ['Block No. ', num2str(run), ',\n', condinst{run}, 'Presse space to start.\n'], [], 'center', white);
+    DrawFormattedText(window, ['Block No. ', num2str(run), ',\n', condinst{run}, 'Presse space to start.\n'], center(1)-200, 'center', white);
     Screen('Flip', window);
     WaitSpace;
 
@@ -316,7 +316,7 @@ session_end;
         vd(2,:) = sind(fangle(2,:)).* (vdsphere / 2);
         vd(1,:) = cosd(fangle(1,:)).*cosd(fangle(2,:)).* (vdsphere / 2);
         fpix = ang2pix(vd);
-    end[keyIsDown, ~, keyCode] = KbCheck;
+    end
 
     function pixels=ang2pix(ang)
         pixpercm=mrect(4)/monitorh;
@@ -366,9 +366,7 @@ session_end;
             % EYETRACKER
              
         end
-        cd data_eye_sfm
         fclose(fid);
-        cd ..
         ShowCursor;
         sca;
         flag_return = 1;
